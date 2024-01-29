@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::group(['namespace' => 'App\Http\Controllers\Currency'], function() {
+    Route::get('/', 'IndexController')->name('currency.index');
+    Route::get('/update', 'UpdateController')->name('currency.update');
+    Route::get('/json', 'StoreController')->name('currency.store');
+    Route::post('/json', 'StoreController')->name('currency.filter');
+    Route::get('/json/{code}', 'ShowController')->name('currency.show');
 });

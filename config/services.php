@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'nbrb' => [
+        'currencies_url' => env('NBRB_CURRENCIES_URL'),
+        'rates_url' => env('NBRB_RATES_URL'),
+    ],
 ];
