@@ -8,15 +8,15 @@ class StoreController extends BaseController
 {
     public function __invoke(StoreRequest $request)
     {
-        $arData = $request->validated();
+        $data = $request->validated();
 
-        if (isset($arData['code'])) {
-            return redirect()->route('currency.show', $arData['code']);
+        if (isset($data['code'])) {
+            return redirect()->route('currency.show', $data['code']);
 
         } else {
-            $arResult = $this->service->json();
+            $currenciesList = $this->repository->getList();
 
-            return view('currency.json', compact('arResult'));
+            return view('currency.json', compact('currenciesList'));
         }
     }
 }

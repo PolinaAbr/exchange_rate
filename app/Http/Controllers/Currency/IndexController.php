@@ -6,8 +6,8 @@ class IndexController extends BaseController
 {
     public function __invoke()
     {
-        $arResult = $this->service->list();
+        $currenciesList = $this->repository->getList();
 
-        return view('currency.list', compact('arResult'));
+        return view('currency.list', compact('currenciesList'));
     }
 }

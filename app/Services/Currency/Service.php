@@ -3,22 +3,23 @@
 namespace App\Services\Currency;
 
 use App\Models\Currency;
+use App\Repositories\CurrencyRepository;
 use Illuminate\Support\Facades\Http;
 
 class Service
 {
     private function getCurrencies()
     {
-        $arResult = [];
+        $result = [];
 
         $url = config('services.nbrb.currencies_url');
         $response = Http::withOptions(['verify' => false])->get($url);
 
         if ($response->successful()) {
-            $arData = $response->json();
+            $data = $response->json();
 
-            foreach ($arData as $currency) {
-                $arResult[$currency['Cur_Abbreviation']] = [
+            foreach ($data as $currency) {
+                $result[$currency['Cur_Abbreviation']] = [
                     'name' => $currency['Cur_Name'],
                     'code' => $currency['Cur_Abbreviation'],
                     'period' => $currency['Cur_Periodicity'] ?: 0,
@@ -26,90 +27,58 @@ class Service
             }
         }
 
-        return $arResult;
+        return $result;
     }
 
     private function getRates($period = 0)
     {
-        $arResult = [];
+        $result = [];
 
         $url = config('services.nbrb.rates_url');
         $response = Http::withOptions(['verify' => false])->get($url . '?periodicity=' . $period);
 
         if ($response->successful()) {
-            $arData = $response->json();
+            $data = $response->json();
 
-            foreach ($arData as $currency) {
-                $arResult[$currency['Cur_Abbreviation']] = [
+            foreach ($data as $currency) {
+                $result[$currency['Cur_Abbreviation']] = [
                     'rate' => $currency['Cur_OfficialRate'] / $currency ['Cur_Scale'],
                 ];
             }
         }
 
-        return $arResult;
+        return $result;
     }
 
     private function getUpdateData()
     {
-        $arPeriods = [];
-        $arRates = [];
-        $arData = [];
+        $periods = [];
+        $rates = [];
+        $data = [];
 
-        $arCurrencies = $this->getCurrencies();
-        foreach ($arCurrencies as $key => $currency) {
-            $arPeriods[$currency['period']] = $currency['period'];
-            unset($arCurrencies[$key]['period']);
+        $currencies = $this->getCurrencies();
+        foreach ($currencies as $key => $currency) {
+            $periods[$currency['period']] = $currency['period'];
+            unset($currencies[$key]['period']);
         }
 
-        if ($arPeriods) {
-            foreach ($arPeriods as $period) {
-                $arRates = array_merge($arRates, $this->getRates($period));
+        if ($periods) {
+            foreach ($periods as $period) {
+                $rates = array_merge($rates, $this->getRates($period));
             }
 
-            $arData = array_merge_recursive(array_intersect_key($arCurrencies, $arRates), $arRates);
+            $data = array_merge_recursive(array_intersect_key($currencies, $rates), $rates);
         }
 
-        return $arData;
+        return $data;
     }
 
-    public function list()
+    public function update(CurrencyRepository $repository)
     {
-        $arCurrencies = Currency::all();
+        $data = $this->getUpdateData();
 
-        return $arCurrencies;
-    }
-
-    public function detail($code)
-    {
-        $arCurrency = Currency::where('code', $code)->firstOrFail();
-
-        return $arCurrency;
-    }
-
-    public function update()
-    {
-        $arUpdate = $this->getUpdateData();
-
-        $result = Currency::upsert(
-            $arUpdate,
-            ['code'],
-            ['name', 'rate']
-        );
+        $result = $repository->updateOrCreate($data);
 
         return $result;
-    }
-
-    public function json($code = '')
-    {
-        $arResult = [];
-
-        if ($code) {
-            $arResult['item'] = $this->detail($code);
-        }
-
-        $arResult['list'] = $this->list();
-        $arResult['json'] = isset($arResult['item']) ? $arResult['item']->toJson() : $arResult['list']->toJson();
-
-        return $arResult;
     }
 }

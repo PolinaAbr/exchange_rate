@@ -10,7 +10,7 @@
     </h3>
     
     <ul>
-        @foreach ($arResult as $currency)
+        @foreach ($currenciesList as $currency)
             <li>
                 {{ $currency->rate }}
                 <a href="{{ route('currency.show', $currency->code) }}">[{{ $currency->code }}]</a>

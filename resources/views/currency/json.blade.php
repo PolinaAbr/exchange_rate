@@ -11,9 +11,9 @@
         <select name="code">
                 <option value="">--выберите валюту--</option>
 
-                @foreach ($arResult['list'] as $item)
+                @foreach ($currenciesList as $item)
                     {{ $option = '' }}
-                    @if (isset($arResult['item']) && $arResult['item']->code == $item->code)
+                    @if (isset($currency) && $currency->code == $item->code)
                         {{ $option = 'selected' }}
                     @endif
 
@@ -24,5 +24,10 @@
     </form>
 </p>
 
-{{ $arResult['json'] }}
+@if (isset($currency))
+    {{ $currency->toJson() }}
+@else
+    {{ $currenciesList->toJson() }}
+@endif
+
 @endsection

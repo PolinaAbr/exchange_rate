@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Repositories\CurrencyRepository;
 use App\Services\Currency\Service;
 use Illuminate\Console\Command;
 
@@ -27,7 +28,8 @@ class ImportCurrenciesRatesCommand extends Command
     public function handle()
     {
         $service = new Service();
-        $result = $service->update();
+        $repository = new CurrencyRepository();
+        $result = $service->update($repository);
 
         if ($result) {
             dump('Записи успешно обновлены');
